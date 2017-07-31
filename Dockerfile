@@ -1,23 +1,32 @@
 FROM debian:stretch
 
 ARG version=2017.7
+
 ENV VERSION $version
 
-RUN apt-get -qq update && \
-    apt-get install -y wget apt-utils gnupg && \
+# Install salt
+RUN DEBIAN_FRONTEND=noninteractive apt-get -qq update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y wget apt-utils gnupg && \
     wget -O - https://repo.saltstack.com/apt/debian/9/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add - && \
     echo "deb http://repo.saltstack.com/apt/debian/9/amd64/${VERSION} stretch main" > /etc/apt/sources.list.d/saltstack.list && \
-    apt-get update && apt-get install -y salt-master && \
-    mkdir -p /var/run/salt /etc/salt/pki/master/minions && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    DEBIAN_FRONTEND=noninteractive apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y salt-master salt-api salt-minion
 
-#RUN useradd --system salt && \
-#    chown -R salt:salt /etc/salt /var/cache/salt /var/log/salt /var/run/salt && \
-#    echo "user: salt" >> /etc/salt/master
+# Customize
+RUN useradd -ms /bin/bash test && \
+    echo "test:test" | chpasswd && \
+    mkdir -p /var/cache/salt /var/cache/salt/master /var/cache/salt/master/jobs /var/run/salt /var/run/salt/master /etc/salt/master.d && \
+    chmod 755 /var/cache/salt /var/cache/salt/master /var/cache/salt/master/jobs /var/run/salt /var/run/salt/master  /etc/salt/master.d && \
 
-#VOLUME ['/etc/salt/pki', '/srv/salt']
-ADD files/env.conf /etc/salt/master.d/
+# Clean image
+RUN apt-get -yqq clean && \
+    apt-get -yqq purge && \
+    rm -rf /tmp/* /var/tmp/* && \
+    rm -rf /var/lib/apt/lists/*
 
-EXPOSE 4505 4506
+# Add config files
+COPY master /etc/salt/
 
-ENTRYPOINT ["/usr/bin/salt-master", "--log-file-level=quiet", "--log-level=debug"]
+# Entry point
+ADD start.sh /start.sh
+CMD ["bash", "start.sh"]
