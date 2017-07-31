@@ -16,7 +16,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -qq update && \
 RUN useradd -ms /bin/bash test && \
     echo "test:test" | chpasswd && \
     mkdir -p /var/cache/salt /var/cache/salt/master /var/cache/salt/master/jobs /var/run/salt /var/run/salt/master /etc/salt/master.d && \
-    chmod 755 /var/cache/salt /var/cache/salt/master /var/cache/salt/master/jobs /var/run/salt /var/run/salt/master  /etc/salt/master.d && \
+    chmod 755 /var/cache/salt /var/cache/salt/master /var/cache/salt/master/jobs /var/run/salt /var/run/salt/master  /etc/salt/master.d
 
 # Clean image
 RUN apt-get -yqq clean && \
