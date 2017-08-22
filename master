@@ -28,3 +28,6 @@ external_auth:
   pam:
     test:
       - .*
+      - '@wheel'
+      - '@runner'
+      - '@jobs'
